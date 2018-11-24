@@ -9,21 +9,24 @@ def parse_feat_file(filename):
         for line in file:
             line = line.rstrip()
             tokens = line.split(' ')
-            idx = int(tokens[0])
-            attributes = list(map(int, tokens[1: ]))
-            nodes[idx] = Node(idx, attributes, [idx])
+            id = int(tokens[0])
+            attributes = np.array(map(int, tokens[1: ]))
+            nodes[id] = Node(id, attributes, set([id]))
     return nodes
 
 def parse_edge_file(filename, nodes):
     with open(data_dir + filename, 'r') as file:
         edges = []
+        adjlist =  dict.fromkeys(nodes.keys(), [])
         for line in file:
             line = line.rstrip()
             tokens = line.split(' ')
             u = int(tokens[0])
             v = int(tokens[1])
+            adjlist[u].append(nodes[v])
+            adjlist[v].append(nodes[u])
             edges.append(Edge(nodes[u], nodes[v]))
-    return edges
+    return edges, adjlist
 
 data_dir = '../../data/facebook/'
 filenames = os.listdir(data_dir)
@@ -34,24 +37,24 @@ edge_files = [filename for filename in filenames if '.edges' in filename]
 
 datasets = {}
 for filename in feat_files:
-    ego_idx = int(filename.split('.')[0])
+    ego_id = int(filename.split('.')[0])
     dataset = {}
-    dataset['ego_idx'] = ego_idx
+    dataset['ego_id'] = ego_id
     dataset['nodes'] = parse_feat_file(filename)
-    datasets[ego_idx] = dataset
+    datasets[ego_id] = dataset
     
 for filename in egofeat_files:
-    ego_idx = int(filename.split('.')[0])
+    ego_id = int(filename.split('.')[0])
     with open(data_dir + filename, 'r') as file:
         line = file.readline()
         line = line.rstrip()
         tokens = line.split(' ')
-        attributes = list(map(int, tokens))
-    datasets[ego_idx]['nodes'][ego_idx] = Node(ego_idx, attributes, [idx])
+        attributes = np.array(map(int, tokens))
+    datasets[ego_id]['nodes'][ego_id] = Node(ego_id, attributes, set([id]))
 
 for filename in edge_files:
-    ego_idx = int(filename.split('.')[0])
-    datasets[ego_idx]['edges'] = parse_edge_file(filename, datasets[ego_idx]['nodes'])
+    ego_id = int(filename.split('.')[0])
+    datasets[ego_id]['edges'], datasets[ego_id]['adjlist'] = parse_edge_file(filename, datasets[ego_id]['nodes'])
 
 count_dataset = 1
 for _, dataset in datasets.items():
