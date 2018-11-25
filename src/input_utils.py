@@ -11,7 +11,7 @@ def parse_feat_file(filename):
             tokens = line.split(' ')
             id = int(tokens[0])
             attributes = np.array(map(int, tokens[1: ]))
-            nodes[id] = Node(id, attributes, set([id]))
+            nodes[id] = Node(id, attributes, {id})
     return nodes
 
 def parse_edge_file(filename, nodes):
@@ -50,7 +50,7 @@ for filename in egofeat_files:
         line = line.rstrip()
         tokens = line.split(' ')
         attributes = np.array(map(int, tokens))
-    datasets[ego_id]['nodes'][ego_id] = Node(ego_id, attributes, set([id]))
+    datasets[ego_id]['nodes'][ego_id] = Node(ego_id, attributes, {id})
 
 for filename in edge_files:
     ego_id = int(filename.split('.')[0])
