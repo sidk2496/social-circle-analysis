@@ -37,18 +37,18 @@ class Graph:
         self.circles = circles
         self.update_edge_weights()
 
-    def randomized_add(self, v_id, circle_id):
-        v = self.nodes[v_id]
+    def randomized_add(self, node_id, circle_id):
+        node = self.nodes[node_id]
         circle = self.circles[circle_id]
         similarities = map(lambda id: \
-                           similarity(v, self.nodes[id]), \
+                           similarity(node, self.nodes[id]), \
                                       circle.nodes)
         avg_similarity = sum(similarities) / len(similarities)
         prob = sigmoid(avg_similarity)
         flip = np.random.binomial(1, prob, 1)
         if flip == 1:
-            v.membership.add(circle.id)
-            circle.nodes.add(v.id)
+            node.membership.add(circle.id)
+            circle.nodes.add(node.id)
 
     def union(self, u_id, v_id):
         u = self.nodes[u_id]
@@ -69,11 +69,11 @@ class Graph:
 
     def label_propagation(self, alpha):
         nodes_temp = self.nodes.copy()
-        for id, node in self.nodes.items():
-            neighbor_attributes = [neighbor.attributes for neighbor in self.adjlist[id]]
+        for node_id, node in self.nodes.items():
+            neighbor_attributes = [self.nodes[neighbor_id].attributes for neighbor_id in self.adjlist[node_id]]
             neighbor_attributes = np.array(neighbor_attributes)
             neighbor_avg = np.average(neighbor_attributes, axis=0)
-            nodes_temp[id].attributes = alpha * node.attributes + (1 - alpha) * neighbor_avg
+            nodes_temp[node_id].attributes = alpha * node.attributes + (1 - alpha) * neighbor_avg
         self.nodes = nodes_temp
 
     def dissolve_circles(self, threshold):

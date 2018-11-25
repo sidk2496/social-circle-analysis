@@ -4,31 +4,28 @@ import pickle
 import argparse
 
 def main(args):
+    threshold = args.t
+    alpha = args.a
     input_filename = args.inp
-    alpha = args.alpha
-    iter = args.iter
-    threshold = args.threshold
+    iterations = args.iter
 
     data_dir = '../../data/facebook/processed/'
     with open(data_dir + input_filename, 'rb') as input_file:
-        graph = pickle.load(input_file)
+        ego_network = pickle.load(input_file)
 
-    nodes = graph['nodes']
-    edges = graph['edges']
-
-    # Initialize 1 circle for each node
+    nodes = ego_network['nodes']
+    edges = ego_network['edges']
+    adjlist = ego_network['adjlist']
     circles = [Circle(node_id, {node_id}) for node_id in nodes.keys()]
     circles = dict(zip(nodes.keys(), circles))
+    ego_network = Graph(nodes, edges, adjlist, circles)
 
-    while iter:
-        edges.sort(key=lambda edge: edge.w)
-        circle_formation()
-        label_propagation(nodes, adjlist, )
-
-
-
-
-
+    while iterations:
+        ego_network.edges.sort(key=lambda edge: edge.w)
+        ego_network.circle_formation()
+        ego_network.dissolve_circles(threshold)
+        ego_network.label_propagation(alpha)
+        ego_network.update_edge_weights()
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
