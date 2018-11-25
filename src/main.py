@@ -15,6 +15,7 @@ def main(args):
 
     nodes = ego_network['nodes']
     edges = ego_network['edges']
+    print(len(edges))
     adjlist = ego_network['adjlist']
     circles = [Circle(node_id, {node_id}) for node_id in nodes.keys()]
     circles = dict(zip(nodes.keys(), circles))
@@ -26,6 +27,8 @@ def main(args):
         ego_network.dissolve_circles(threshold)
         ego_network.label_propagation(alpha)
         ego_network.update_edge_weights()
+        iterations -= 1
+        print(iterations)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()

@@ -1,10 +1,13 @@
 import numpy as np
+from sklearn.metrics.pairwise import cosine_similarity
 
 def sigmoid(x):
     return 1 / (1 + np.exp(-x))
 
 def similarity(u, v):
-    return
+    attribute_matrix = np.vstack([u.attributes, v.attributes])
+    #print(cosine_similarity(attribute_matrix)[0][1])
+    return cosine_similarity(attribute_matrix)[0][1]
 
 def IoU_score(circle1, circle2):
     I = len(circle1.nodes.intersection(circle2.nodes))
@@ -38,13 +41,15 @@ class Graph:
         self.update_edge_weights()
 
     def randomized_add(self, node_id, circle_id):
+        # print('add')
         node = self.nodes[node_id]
         circle = self.circles[circle_id]
-        similarities = map(lambda id: \
+        similarities = list(map(lambda id: \
                            similarity(node, self.nodes[id]), \
-                                      circle.nodes)
+                                      circle.nodes))
         avg_similarity = sum(similarities) / len(similarities)
-        prob = sigmoid(avg_similarity)
+        prob = avg_similarity
+        print(prob)
         flip = np.random.binomial(1, prob, 1)
         if flip == 1:
             node.membership.add(circle.id)
@@ -54,20 +59,23 @@ class Graph:
         u = self.nodes[u_id]
         v = self.nodes[v_id]
         u_diff_v = u.membership.difference(v.membership)
-        if len(u_diff_v) != 0:
-            for circle_id in u_diff_v:
-                self.randomized_add(v.id, circle_id)
+        for circle_id in u_diff_v:
+            pass#self.randomized_add(v.id, circle_id)
 
         v_diff_u = u.membership.difference(v.membership)
-        if len(v_diff_u) != 0:
-            for circle_id in v_diff_u:
-                self.randomized_add(u.id, circle_id)
+        for circle_id in v_diff_u:
+            pass#self.randomized_add(u.id, circle_id)
 
     def circle_formation(self):
+        print('circle form')
+        i=0
         for edge in self.edges:
             self.union(edge.u_id, edge.v_id)
+            i+=1
+            print('union' + str(i))
 
     def label_propagation(self, alpha):
+        print('label prop')
         nodes_temp = self.nodes.copy()
         for node_id, node in self.nodes.items():
             neighbor_attributes = [self.nodes[neighbor_id].attributes for neighbor_id in self.adjlist[node_id]]
@@ -77,7 +85,9 @@ class Graph:
         self.nodes = nodes_temp
 
     def dissolve_circles(self, threshold):
+        print('dissolve')
         circles = self.circles.values()
+        print(type(circles))
         for iter, circle1 in enumerate(circles):
             for circle2 in circles[iter + 1: ]:
                 iou = IoU_score(circle1, circle2)
@@ -90,6 +100,7 @@ class Graph:
                     del self.circles[circle2.id]
 
     def update_edge_weights(self):
+        print('update')
         for edge in self.edges:
             u_id = edge.u_id
             v_id = edge.v_id
