@@ -86,7 +86,7 @@ class Graph:
 
     def dissolve_circles(self, threshold):
         print('dissolve')
-        circles = self.circles.values()
+        circles = list(self.circles.values())
         print(type(circles))
         for iter, circle1 in enumerate(circles):
             for circle2 in circles[iter + 1: ]:

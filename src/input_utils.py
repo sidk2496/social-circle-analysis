@@ -6,8 +6,8 @@ import os
 def parse_feat_file(filename):
     with open(data_dir + filename, 'r') as file:
         nodes = {}
-        for line in file:
-            line = line.rstrip()
+        lines = file.read().splitlines()
+        for line in lines:
             tokens = line.split(' ')
             id = int(tokens[0])
             attributes = np.array(list(map(int, tokens[1: ])))
@@ -18,15 +18,15 @@ def parse_edge_file(filename):
     with open(data_dir + filename, 'r') as file:
         edges = []
         adjlist = {}
-        for line in file:
-            line = line.rstrip()
+        lines = file.read().splitlines()
+        for line in lines:
             tokens = line.split(' ')
             u_id = int(tokens[0])
             v_id = int(tokens[1])
-            if adjlist.get(u_id, None) is None:
+            if adjlist.get(u_id, None) == None:
                 adjlist[u_id] = []
             adjlist[u_id].append(v_id)
-            if adjlist.get(v_id, None) is None:
+            if adjlist.get(v_id, None) == None:
                 adjlist[v_id] = []
             adjlist[v_id].append(u_id)
             edges.append(Edge(u_id, v_id))
