@@ -14,20 +14,31 @@ def main(args):
         ego_network = pickle.load(input_file)
 
     nodes = ego_network['nodes']
+    print(len(nodes))
     edges = ego_network['edges']
+    print(len(edges))
     adjlist = ego_network['adjlist']
+    rev_mapping = ego_network['rev_map']
     circles = [Circle(node_id, {node_id}) for node_id in range(len(nodes))]
     circles = dict(zip(range(len(nodes)), circles))
     ego_network = Graph(nodes, edges, adjlist, circles)
 
-    while iterations:
-        ego_network.edges.sort(key=lambda edge: edge.w)
+    it = 0
+    while it < iterations:
+        ego_network.edges.sort(key=lambda edge: edge.w, reverse=True)
         ego_network.circle_formation()
-        ego_network.dissolve_circles(threshold)
+        # ego_network.dissolve_circles(threshold)
         ego_network.label_propagation(alpha)
         ego_network.update_similarities()
-        print(iterations)
-        iterations -= 1
+        it += 1
+        print('Iteration %d' % it)
+
+        for circle_id, circle in circles.items():
+            print('circle' + str(circle_id))
+            for node_id in circle.nodes:
+                print(node_id, end = ' ')
+            print('\n')
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()

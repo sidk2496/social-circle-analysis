@@ -40,11 +40,16 @@ class Graph:
         node = self.nodes[node_id]
         circle = self.circles[circle_id]
         avg_similarity = np.average(self.sim_matrix[node_id, list(circle.nodes)])
-        prob = avg_similarity
+        prob = sigmoid(50 * (avg_similarity - 0.5))
         flip = np.random.binomial(1, prob, 1)
+        # print("Prob of adding node {0} to circle {1}={2}".format(node_id, circle_id, prob))
+        # print("Add or dont add: {0}".format(flip))
         if flip == 1:
-            node.membership.add(circle.id)
-            circle.nodes.add(node.id)
+        	# print("############# added ########" + str(flip))
+        	node.membership.add(circle.id)
+        	circle.nodes.add(node.id)
+        	if (circle_id == 0):
+        		print("{0} nodes in circle 0".format(len(circle.nodes)))
 
     def union(self, u_id, v_id):
         u = self.nodes[u_id]
@@ -58,12 +63,10 @@ class Graph:
             self.randomized_add(u.id, circle_id)
 
     def circle_formation(self):
-        print('circle form')
         for edge in self.edges:
             self.union(edge.u_id, edge.v_id)
 
     def label_propagation(self, alpha):
-        print('label prop')
         nodes_temp = self.nodes.copy()
         for node_id, node in enumerate(self.nodes):
         	if node_id in self.adjlist.keys():
@@ -74,13 +77,13 @@ class Graph:
         self.nodes = nodes_temp
 
     def dissolve_circles(self, threshold):
-        print('dissolve')
         circles = self.circles.values()
         delete_circle_ids = []
         for iter, circle1 in enumerate(circles):
             for circle2 in list(circles)[iter + 1: ]:
                 iou = IoU_score(circle1, circle2)
                 if iou > threshold:
+                	print('thresh:' + str(th))
                     for node_id in circle2.nodes:
                         node = self.nodes[node_id]
                         node.membership.remove(circle2.id)
@@ -93,7 +96,6 @@ class Graph:
         	del self.circles[circle_id]
 
     def update_similarities(self):
-        print('update')
         attribute_matrix = np.vstack([node.attributes for node in self.nodes])
         self.sim_matrix = cosine_similarity(attribute_matrix)
         for edge in self.edges:

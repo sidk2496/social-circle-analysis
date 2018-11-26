@@ -56,8 +56,6 @@ for filename in edge_files:
     mapping = egonet['map']
     egonet['edges'], egonet['adjlist'] = parse_edge_file(filename, mapping)
 
-count = 1
 for _, egonet in egonets.items():
-    with open(data_dir + 'processed/egonet_' + str(count) + '.pkl', 'wb') as egonet_file:
+    with open(data_dir + 'processed/egonet_' + str(egonet['ego_id']) + '.pkl', 'wb') as egonet_file:
         pickle.dump(egonet, egonet_file)
-    count += 1
