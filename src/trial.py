@@ -10,8 +10,8 @@ import pickle
 import numpy as np
 with open('../../data/facebook/processed/egonet_1.pkl', 'rb') as file:
     h=pickle.load(file)
-    f=np.array(h['nodes'][0].attributes)
-    print(f.sum())
+    #f=np.array(h['nodes'][0].attributes)
+    #print(f.sum())
 #    print(h['nodes'][0].attributes.shape)
 #def f(x):
 #    return x*2

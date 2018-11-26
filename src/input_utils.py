@@ -5,28 +5,32 @@ import os
 
 def parse_feat_file(filename):
     with open(data_dir + filename, 'r') as file:
-        nodes = {}
+        nodes = []
+        mapping = {}
+        rev_mapping = {}
         lines = file.read().splitlines()
-        for line in lines:
+        for i, line in enumerate(lines):
             tokens = line.split(' ')
-            id = int(tokens[0])
+            node_id = int(tokens[0])
             attributes = np.array(list(map(int, tokens[1: ])))
-            nodes[id] = Node(id, attributes, {id})
-    return nodes
+            mapping[node_id] = i
+            rev_mapping[i] = node_id
+            nodes.append(Node(i, attributes, {i}))
+    return nodes, mapping, rev_mapping
 
-def parse_edge_file(filename):
+def parse_edge_file(filename, mapping):
     with open(data_dir + filename, 'r') as file:
         edges = []
         adjlist = {}
         lines = file.read().splitlines()
         for line in lines:
             tokens = line.split(' ')
-            u_id = int(tokens[0])
-            v_id = int(tokens[1])
-            if adjlist.get(u_id, None) == None:
+            u_id = mapping[int(tokens[0])]
+            v_id = mapping[int(tokens[1])]
+            if u_id not in adjlist.keys():
                 adjlist[u_id] = []
             adjlist[u_id].append(v_id)
-            if adjlist.get(v_id, None) == None:
+            if v_id not in adjlist.keys():
                 adjlist[v_id] = []
             adjlist[v_id].append(u_id)
             edges.append(Edge(u_id, v_id))
@@ -36,31 +40,24 @@ data_dir = '../../data/facebook/'
 filenames = os.listdir(data_dir)
 
 feat_files = [filename for filename in filenames if '.feat' in filename and 'names' not in filename]
-egofeat_files = [filename for filename in filenames if '.egofeat' in filename]
 edge_files = [filename for filename in filenames if '.edges' in filename]
 
-ego_networks = {}
+egonets = {}
 for filename in feat_files:
     ego_id = int(filename.split('.')[0])
-    ego_network = {}
-    ego_network['ego_id'] = ego_id
-    ego_network['nodes'] = parse_feat_file(filename)
-    ego_networks[ego_id] = ego_network
-    
-for filename in egofeat_files:
-    ego_id = int(filename.split('.')[0])
-    with open(data_dir + filename, 'r') as file:
-        line = file.readline().rstrip()
-        tokens = line.split(' ')
-        attributes = np.array(list(map(int, tokens)))
-    ego_networks[ego_id]['nodes'][ego_id] = Node(ego_id, attributes, {id})
+    egonet = {}
+    egonet['ego_id'] = ego_id
+    egonet['nodes'], egonet['map'], egonet['rev_map'] = parse_feat_file(filename)
+    egonets[ego_id] = egonet
 
 for filename in edge_files:
     ego_id = int(filename.split('.')[0])
-    ego_networks[ego_id]['edges'], ego_networks[ego_id]['adjlist'] = parse_edge_file(filename)
+    egonet = egonets[ego_id]
+    mapping = egonet['map']
+    egonet['edges'], egonet['adjlist'] = parse_edge_file(filename, mapping)
 
 count = 1
-for _, ego_network in ego_networks.items():
-    with open(data_dir + 'processed/egonet_' + str(count) + '.pkl', 'wb') as ego_network_file:
-        pickle.dump(ego_network, ego_network_file)
+for _, egonet in egonets.items():
+    with open(data_dir + 'processed/egonet_' + str(count) + '.pkl', 'wb') as egonet_file:
+        pickle.dump(egonet, egonet_file)
     count += 1
