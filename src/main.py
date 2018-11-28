@@ -27,7 +27,6 @@ def main(args):
     while it < iterations:
         ego_network.edges.sort(key=lambda edge: edge.w, reverse=True)
         ego_network.circle_formation()
-
         ego_network.dissolve_circles(threshold)
         ego_network.label_propagation(alpha)
         ego_network.update_graph()
@@ -36,9 +35,9 @@ def main(args):
     print(len(ego_network.new_circles))
 
     for circle_id, circle in ego_network.new_circles.items():
-        print('circle' + str(circle_id))
+        print('circle' + str(rev_mapping[circle_id]))
         for node_id in circle.members:
-            print(node_id, end=' ')
+            print(rev_mapping[node_id], end=' ')
         print('\n')
 
 

@@ -49,13 +49,9 @@ class Graph:
         new_circle = self.new_circles[circle_id]
         avg_similarity = np.min(self.sim_matrix[node_id, list(old_circle.members)])
         prob = sigmoid(50 * (avg_similarity - 0.5))
-        # prob = min(max(avg_similarity, 0), 1)
-        flip = np.random.binomial(1, prob, 1)
-        if flip == 1:
+        if prob > 0.5:
             new_node.membership.add(circle_id)
             new_circle.members.add(node_id)
-            # if circle_id == 0:
-            #     print("Randomized add added to the circle ")
 
     def union(self, u_id, v_id):
         u = self.old_nodes[u_id]
@@ -73,37 +69,41 @@ class Graph:
             self.union(edge.u_id, edge.v_id)
 
     def label_propagation(self, alpha):
-        nodes_temp = deepcopy(self.new_nodes)
+        temp_nodes = deepcopy(self.new_nodes)
         for node_id, node in enumerate(self.new_nodes):
             if node_id in self.adjlist.keys():
                 neighbor_attributes = [self.new_nodes[neighbor_id].attributes for neighbor_id in self.adjlist[node_id]]
                 neighbor_attributes = np.array(neighbor_attributes)
                 neighbor_avg = np.average(neighbor_attributes, axis=0)
-                nodes_temp[node_id].attributes = alpha * node.attributes + (1 - alpha) * neighbor_avg
-        self.new_nodes = deepcopy(nodes_temp)
+                temp_nodes[node_id].attributes = alpha * node.attributes + (1 - alpha) * neighbor_avg
+        self.new_nodes = deepcopy(temp_nodes)
 
     def dissolve_circles(self, threshold):
         circles = self.new_circles.values()
+        temp_circles = deepcopy(self.new_circles)
         delete_circle_ids = []
         for iter, circle1 in enumerate(circles):
             for circle2 in list(circles)[iter + 1:]:
                 iou, i, u = IoU_score(circle1, circle2)
-                # print("Intersection: {0}, Union: {1}".format(i, u))
                 if iou > threshold:
-
+                	# Doesn't matter if we iterate through new_circles or temp_circles
+                	# They will always be the same for circle2 i.e., 
+                	# initial value of new_circles[circle2.id] (if becoming circle2 for the first time) 
+                	# or empty circle (if becoming circle2 again)
                     for node_id in circle2.members:
                         node = self.new_nodes[node_id]
                         node.membership.remove(circle2.id)
                         node.membership.add(circle1.id)
-                        circle1.members.add(node_id)
-                        # if circle1.id == 0:
-                        #     print("Dissolve circles added to the circle")
+                        temp_circles[circle1.id].members.add(node_id)
                     circle2.members.clear()
-                    self.new_circles[circle2.id].members.clear()
+                    temp_circles[circle2.id].members.clear()
                     delete_circle_ids.append(circle2.id)
 
         for circle_id in delete_circle_ids:
             del self.new_circles[circle_id]
+            del temp_circles[circle_id]
+
+        self.new_circles = deepcopy(temp_circles)
 
     def update_graph(self):
         attribute_matrix = np.vstack([node.attributes for node in self.new_nodes])
