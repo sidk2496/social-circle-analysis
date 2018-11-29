@@ -47,7 +47,7 @@ class Graph:
         new_node = self.new_nodes[node_id]
         old_circle = self.old_circles[circle_id]
         new_circle = self.new_circles[circle_id]
-        avg_similarity = np.min(self.sim_matrix[node_id, list(old_circle.members)])
+        avg_similarity = np.average(self.sim_matrix[node_id, list(old_circle.members)])
         prob = sigmoid(50 * (avg_similarity - 0.5))
         if prob > 0.5:
             new_node.membership.add(circle_id)
@@ -68,7 +68,7 @@ class Graph:
         for edge in self.edges:
             self.union(edge.u_id, edge.v_id)
 
-    def label_propagation(self, alpha):
+    def label_propagation(self, alpha, it):
         temp_nodes = deepcopy(self.new_nodes)
         for node_id, node in enumerate(self.new_nodes):
             if node_id in self.adjlist.keys():
@@ -115,3 +115,13 @@ class Graph:
             edge.w = self.sim_matrix[u_id, v_id]
         self.old_nodes = deepcopy(self.new_nodes)
         self.old_circles = deepcopy(self.new_circles)
+
+    def remove_lone_node_circles(self):
+        delete_circle_ids = []
+        for circle in self.new_circles.values():
+            if circle.id not in self.adjlist.keys():
+                delete_circle_ids.append(circle.id)
+
+        for circle_id in delete_circle_ids:
+            del self.new_circles[circle_id]
+            del self.old_circles[circle_id]

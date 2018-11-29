@@ -11,30 +11,32 @@ def main(args):
 
     data_dir = '../../data/facebook/processed/'
     with open(data_dir + input_filename, 'rb') as input_file:
-        ego_network = pickle.load(input_file)
+        egonet = pickle.load(input_file)
 
-    nodes = ego_network['nodes']
-    edges = ego_network['edges']
-    adjlist = ego_network['adjlist']
-    rev_mapping = ego_network['rev_map']
+    nodes = egonet['nodes']
+    edges = egonet['edges']
+    adjlist = egonet['adjlist']
+    rev_mapping = egonet['rev_map']
 
     circles = [Circle(node_id, {node_id}) for node_id in range(len(nodes))]
 
     circles = dict(zip(range(len(nodes)), circles))
-    ego_network = Graph(nodes, edges, adjlist, circles)
+    egonet = Graph(nodes, edges, adjlist, circles)
 
     it = 0
     while it < iterations:
-        ego_network.edges.sort(key=lambda edge: edge.w, reverse=True)
-        ego_network.circle_formation()
-        ego_network.dissolve_circles(threshold)
-        ego_network.label_propagation(alpha)
-        ego_network.update_graph()
         it += 1
+        egonet.edges.sort(key=lambda edge: edge.w, reverse=True)
+        egonet.circle_formation()
+        egonet.dissolve_circles(threshold)
+        egonet.label_propagation(alpha, it)
+        egonet.update_graph()
         print('Iteration %d' % it)
-    print(len(ego_network.new_circles))
 
-    for circle_id, circle in ego_network.new_circles.items():
+    egonet.remove_lone_node_circles()
+    print('Number of circles: ' + str(len(egonet.new_circles)))
+
+    for circle_id, circle in egonet.new_circles.items():
         print('circle' + str(rev_mapping[circle_id]))
         for node_id in circle.members:
             print(rev_mapping[node_id], end=' ')
