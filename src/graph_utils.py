@@ -43,12 +43,12 @@ class Graph:
         self.new_circles = deepcopy(circles)
         self.update_graph()
 
-    def randomized_add(self, node_id, circle_id):
+    def add(self, node_id, circle_id):
         new_node = self.new_nodes[node_id]
         old_circle = self.old_circles[circle_id]
         new_circle = self.new_circles[circle_id]
-        avg_similarity = np.average(self.sim_matrix[node_id, list(old_circle.members)])
-        prob = sigmoid(50 * (avg_similarity - 0.5))
+        avg_similarity = np.min(self.sim_matrix[node_id, list(old_circle.members)])
+        prob = avg_similarity#sigmoid(50 * (avg_similarity - 0.5))
         if prob > 0.5:
             new_node.membership.add(circle_id)
             new_circle.members.add(node_id)
@@ -58,24 +58,35 @@ class Graph:
         v = self.old_nodes[v_id]
         u_diff_v = u.membership.difference(v.membership)
         for circle_id in u_diff_v:
-            self.randomized_add(v.id, circle_id)
+            self.add(v.id, circle_id)
 
         v_diff_u = v.membership.difference(u.membership)
         for circle_id in v_diff_u:
-            self.randomized_add(u.id, circle_id)
+            self.add(u.id, circle_id)
 
     def circle_formation(self):
         for edge in self.edges:
             self.union(edge.u_id, edge.v_id)
 
-    def label_propagation(self, alpha, it):
+    def label_propagation(self, alpha):
         temp_nodes = deepcopy(self.new_nodes)
         for node_id, node in enumerate(self.new_nodes):
-            if node_id in self.adjlist.keys():
-                neighbor_attributes = [self.new_nodes[neighbor_id].attributes for neighbor_id in self.adjlist[node_id]]
-                neighbor_attributes = np.array(neighbor_attributes)
-                neighbor_avg = np.average(neighbor_attributes, axis=0)
-                temp_nodes[node_id].attributes = alpha * node.attributes + (1 - alpha) * neighbor_avg
+            neighbor_indices = set([])
+            for circle_id in node.membership:
+                neighbor_indices.update(self.new_circles[circle_id].members)
+            weights = self.sim_matrix[node_id, list(neighbor_indices)]
+            weights /= weights.sum()
+            one_indices = node.attributes == 1
+            neighbor_attributes = np.vstack([self.new_nodes[id].attributes for id in neighbor_indices])
+            new_attributes = np.matmul(weights, neighbor_attributes)
+            new_attributes[one_indices] = 1
+            temp_nodes[node_id].attributes = alpha * node.attributes + (1 - alpha) * new_attributes
+
+            # if node_id in self.adjlist.keys():
+                # neighbor_attributes = [self.new_nodes[neighbor_id].attributes for neighbor_id in self.adjlist[node_id]]
+                # neighbor_attributes = np.array(neighbor_attributes)
+                # neighbor_avg = np.average(neighbor_attributes, axis=0)
+                # temp_nodes[node_id].attributes = alpha * node.attributes + (1 - alpha) * neighbor_avg
         self.new_nodes = deepcopy(temp_nodes)
 
     def dissolve_circles(self, threshold):
@@ -108,7 +119,6 @@ class Graph:
     def update_graph(self):
         attribute_matrix = np.vstack([node.attributes for node in self.new_nodes])
         self.sim_matrix = cosine_similarity(attribute_matrix)
-        # print(self.sim_matrix[0, self.adjlist[0]])
         for edge in self.edges:
             u_id = edge.u_id
             v_id = edge.v_id

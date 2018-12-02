@@ -29,10 +29,11 @@ def main(args):
         egonet.edges.sort(key=lambda edge: edge.w, reverse=True)
         egonet.circle_formation()
         egonet.dissolve_circles(threshold)
-        egonet.label_propagation(alpha, it)
+        egonet.label_propagation(alpha)
         egonet.update_graph()
         print('Iteration %d' % it)
 
+    print(egonet.new_nodes[0].attributes)
     egonet.remove_lone_node_circles()
     print('Number of circles: ' + str(len(egonet.new_circles)))
 
