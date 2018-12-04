@@ -2,11 +2,12 @@ from graph_utils import *
 from input_utils import *
 import pickle
 import argparse
+from ber_utils import BER_F1
 
 def main(args):
     threshold = args.t
     alpha = args.a
-    input_filename = args.inp
+    input_filename = 'egonet_' + args.inp + '.pkl'
     iterations = args.iter
 
     data_dir = '../../data/facebook/processed/'
@@ -33,15 +34,17 @@ def main(args):
         egonet.update_graph()
         print('Iteration %d' % it)
 
-    print(egonet.new_nodes[0].attributes)
-    egonet.remove_lone_node_circles()
-    print('Number of circles: ' + str(len(egonet.new_circles)))
+    egonet.post_clustering()
+    print('Number of circles: ' + str(len(egonet.circles)))
 
-    for circle_id, circle in egonet.new_circles.items():
+    for circle_id, circle in egonet.circles.items():
         print('circle' + str(rev_mapping[circle_id]))
         for node_id in circle.members:
             print(rev_mapping[node_id], end=' ')
         print('\n')
+
+    BER_score, F1_score = BER_F1(egonet, args.inp, rev_mapping)
+    print('BER score: %f\nF1 score: %f' % (BER_score, F1_score))
 
 
 if __name__ == '__main__':
