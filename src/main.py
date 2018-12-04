@@ -9,7 +9,6 @@ def main(args):
     alpha = args.a
     input_filename = 'egonet_' + args.inp + '.pkl'
     iterations = args.iter
-
     data_dir = '../../data/facebook/processed/'
     with open(data_dir + input_filename, 'rb') as input_file:
         egonet = pickle.load(input_file)
@@ -18,9 +17,7 @@ def main(args):
     edges = egonet['edges']
     adjlist = egonet['adjlist']
     rev_mapping = egonet['rev_map']
-
     circles = [Circle(node_id, {node_id}) for node_id in range(len(nodes))]
-
     circles = dict(zip(range(len(nodes)), circles))
     egonet = Graph(nodes, edges, adjlist, circles)
 
@@ -32,6 +29,8 @@ def main(args):
         egonet.dissolve_circles(threshold)
         egonet.label_propagation(alpha)
         egonet.update_graph()
+        if egonet.is_converge:
+            break
         print('Iteration %d' % it)
 
     egonet.post_clustering()
