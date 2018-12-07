@@ -46,8 +46,8 @@ def main(args):
         BER_scores.append(BER_score)
         F1_scores.append(F1_score)
 
-        np.save('f1_scores.npy', F1_scores)
-        np.save('ber_scores.npy', BER_scores)
+        np.save('f1_scores_{0}.npy'.format(args.inp), F1_scores)
+        np.save('ber_scores_{0}.npy'.format(args.inp), BER_scores)
 
     font = {'size': 16}
     matplotlib.rc('font', **font)
