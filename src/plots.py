@@ -13,16 +13,17 @@ def main(args):
     iterations = args.iter
 
     data_dir = '../../data/facebook/processed/'
-    with open(data_dir + input_filename, 'rb') as input_file:
-        egonet_temp = pickle.load(input_file)
 
     BER_scores = []
     F1_scores = []
+    
     for threshold in thresholds:
-        nodes = egonet_temp['nodes']
-        edges = egonet_temp['edges']
-        adjlist = egonet_temp['adjlist']
-        rev_mapping = egonet_temp['rev_map']
+        with open(data_dir + input_filename, 'rb') as input_file:
+            egonet = pickle.load(input_file)
+        nodes = egonet['nodes']
+        edges = egonet['edges']
+        adjlist = egonet['adjlist']
+        rev_mapping = egonet['rev_map']
 
         circles = [Circle(node_id, {node_id}) for node_id in range(len(nodes))]
 
