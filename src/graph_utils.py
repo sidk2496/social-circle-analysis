@@ -6,9 +6,9 @@ def sigmoid(x):
     return 1 / (1 + np.exp(-x))
 
 def IoU_score(circle1, circle2):
-    I = len(circle1.members.intersection(circle2.members))
-    U = len(circle1.members.union(circle2.members))
-    return 0 if U == 0 else I / U, I, U
+    I = len(circle1.members & circle2.members)
+    U = len(circle1.members | circle2.members)
+    return 0 if U == 0 else I / U
 
 
 class Node:
@@ -104,7 +104,7 @@ class Graph:
         delete_circle_ids = []
         for iter, circle1 in enumerate(circles):
             for circle2 in list(circles)[iter + 1:]:
-                iou, i, u = IoU_score(circle1, circle2)
+                iou = IoU_score(circle1, circle2)
                 if iou > threshold:
                 	# Doesn't matter if we iterate through new_circles or temp_circles
                 	# They will always be the same for circle2 i.e.,

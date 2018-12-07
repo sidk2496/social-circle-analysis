@@ -2,7 +2,7 @@ from graph_utils import *
 from input_utils import *
 import pickle
 import argparse
-from ber_utils import BER_F1
+from metrics_utils import BER_F1
 
 def main(args):
     threshold = args.t
@@ -32,8 +32,8 @@ def main(args):
         egonet.dissolve_circles(threshold)
         egonet.label_propagation(alpha)
         egonet.update_graph()
-        if egonet.is_converge:
-            break
+        # if egonet.is_converge:
+        #     break
         print('Iteration %d' % it)
 
     egonet.post_clustering()
@@ -45,8 +45,8 @@ def main(args):
             print(rev_mapping[node_id], end=' ')
         print('\n')
 
-    BER_score, F1_score = BER_F1(egonet, args.inp, rev_mapping)
-    print('BER score: %f\nF1 score: %f' % (BER_score, F1_score))
+    BER_score, F1_score, precision_circ = metrics(egonet, args.inp, rev_mapping)
+    print('BER score: %f\nF1 score: %f\nPrecision: %f' % (BER_score, F1_score, precision_circ))
 
 
 if __name__ == '__main__':
