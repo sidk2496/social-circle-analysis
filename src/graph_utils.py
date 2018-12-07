@@ -148,6 +148,6 @@ class Graph:
         new_attributes = np.vstack([node.attributes for node in new_nodes])
         diff = np.absolute(old_attributes - new_attributes)
         avg_diff = np.average(diff)
-        if (avg_diff < 0.00001):
+        if (avg_diff < 0.0001):
             self.is_converge = True
 
