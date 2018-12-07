@@ -2,7 +2,7 @@ from graph_utils import *
 from input_utils import *
 import pickle
 import argparse
-from ber_utils import BER_F1
+from metrics_utils import metrics
 import matplotlib
 from matplotlib import pyplot as plt
 
