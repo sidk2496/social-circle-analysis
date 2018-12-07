@@ -95,7 +95,7 @@ class Graph:
             #     neighbor_attributes = np.array(neighbor_attributes)
             #     neighbor_avg = np.average(neighbor_attributes, axis=0)
             #     temp_nodes[node_id].attributes = alpha * node.attributes + (1 - alpha) * neighbor_avg
-        self.check_convergence(self.nodes, temp_nodes)
+        # self.check_convergence(self.nodes, temp_nodes)
         self.nodes = deepcopy(temp_nodes)
 
     def dissolve_circles(self, threshold):
@@ -148,6 +148,6 @@ class Graph:
         new_attributes = np.vstack([node.attributes for node in new_nodes])
         diff = np.absolute(old_attributes - new_attributes)
         avg_diff = np.average(diff)
-        if (avg_diff < 0.0001):
+        if (avg_diff < 0.00001):
             self.is_converge = True
 
