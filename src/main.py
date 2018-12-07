@@ -45,8 +45,8 @@ def main(args):
             print(rev_mapping[node_id], end=' ')
         print('\n')
 
-    BER_score, F1_score, precision_circ = metrics(egonet, args.inp, rev_mapping)
-    print('BER score: %f\nF1 score: %f\nPrecision: %f' % (BER_score, F1_score, precision_circ))
+    BER_score, F1_score, F1_circ = metrics(egonet, args.inp, rev_mapping)
+    print('BER score: %f\nF1 score: %f\nF1 circles: %f' % (BER_score, F1_score, F1_circ))
 
 
 if __name__ == '__main__':

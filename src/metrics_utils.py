@@ -43,14 +43,22 @@ def metrics(egonet_pred, ego_id, rev_mapping):
 	row_indices, col_indices = linear_sum_assignment(BER_matrix)
 	avg_BER_score = 1 - np.average(BER_matrix[row_indices, col_indices])
 
+	# max F1-score assignment
+	row_indices, col_indices = linear_sum_assignment(1 - F1_score_matrix)
+	avg_F1_score = np.average(F1_score_matrix[row_indices, col_indices])
+
 	TP_circ = 0
 	FP_circ = 0
+	FN_circ = 0
 	num_match = len(row_indices)
 
 	for i in range(num_match):
 		pred_members = set([rev_mapping[node_id] for node_id in pred_circles[row_indices[i]].members])
 		true_circle = true_circles[col_indices[i]]
-		TP_circ += IoU_score(pred_members, true_circle)
+		iou = IoU_score(pred_members, true_circle)
+		TP_circ += iou
+		FP_circ += 1 - iou
+		FN_circ += 1 - iou
 
 	for row, pred_circle in enumerate(pred_circles):
 		if row not in row_indices:
@@ -60,11 +68,17 @@ def metrics(egonet_pred, ego_id, rev_mapping):
 				max_IoU = max(max_IoU, IoU_score(pred_members, true_circle))
 			FP_circ += 1 - max_IoU
 
-	precision_circ = TP_circ / (TP_circ + FP_circ + 1e-6)
+	for col, true_circle in enumerate(true_circles):
+		if col not in col_indices:
+			max_IoU = 0
+			for pred_circle in pred_circles:
+				pred_members = set([rev_mapping[node_id] for node_id in pred_circle.members])
+				max_IoU = max(max_IoU, IoU_score(pred_members, true_circle))
+			FN_circ += 1 - max_IoU
 
-	# max F1-score assignment
-	row_indices, col_indices = linear_sum_assignment(1 - F1_score_matrix)
-	avg_F1_score = np.average(F1_score_matrix[row_indices, col_indices])
+	precision_circ = TP_circ / (TP_circ + FP_circ + 1e-6)
+	recall_circ = TP_circ / (TP_circ + FN_circ + 1e-6)
+	F1_circ = 2 * precision_circ * recall_circ / (precision_circ + recall_circ + 1e-6)
 	# print(BER_matrix.shape)
 	# print(BER_matrix[row_indices, col_indices])
 	# print(row_indices)
@@ -72,4 +86,4 @@ def metrics(egonet_pred, ego_id, rev_mapping):
 	# 	for n in pred_circles[row].members:
 	# 		print(rev_mapping[n])
 
-	return avg_BER_score, avg_F1_score, precision_circ
+	return avg_BER_score, avg_F1_score, F1_circ

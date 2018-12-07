@@ -16,7 +16,7 @@ def main(args):
 
     BER_scores = []
     F1_scores = []
-    precision_scores = []
+    F1_circ_scores = []
     
     for threshold in thresholds:
         with open(data_dir + input_filename, 'rb') as input_file:
@@ -44,10 +44,10 @@ def main(args):
             if it % 10 == 0:
                 print('Iteration %d' % it)
         egonet.post_clustering()
-        BER_score, F1_score, precision_circ = metrics(egonet, args.inp, rev_mapping)
+        BER_score, F1_score, F1_circ = metrics(egonet, args.inp, rev_mapping)
         BER_scores.append(BER_score)
         F1_scores.append(F1_score)
-        precision_scores.append(precision_circ)
+        F1_circ_scores.append(precision_circ)
 
         np.save('f1_scores_{0}.npy'.format(args.inp), F1_scores)
         np.save('ber_scores_{0}.npy'.format(args.inp), BER_scores)
