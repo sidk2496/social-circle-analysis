@@ -36,6 +36,7 @@ def BER_F1(egonet_pred, ego_id, rev_mapping):
 
 	row_indices, col_indices = linear_sum_assignment(BER_matrix)
 	avg_BER_score = 1 - np.average(BER_matrix[row_indices, col_indices])
+	row_indices, col_indices = linear_sum_assignment(1 - F1_score_matrix)
 	avg_F1_score = np.average(F1_score_matrix[row_indices, col_indices])
 	# print(BER_matrix.shape)
 	# print(BER_matrix[row_indices, col_indices])
