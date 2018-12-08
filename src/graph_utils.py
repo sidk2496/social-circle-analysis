@@ -49,7 +49,7 @@ class Graph:
 
     def add(self, node_id, circle_id, temp_node, temp_circle):
         circle = self.circles[circle_id]
-        similarity = np.min(self.sim_matrix[node_id, list(circle.members)])
+        similarity = np.average(self.sim_matrix[node_id, list(circle.members)])
         prob = similarity # sigmoid(50 * (avg_similarity - 0.5))
         # print(prob)
         if prob > 0.5:
@@ -135,7 +135,7 @@ class Graph:
 
     def update_graph(self):
         attribute_matrix = np.vstack([node.attributes for node in self.nodes])
-        self.sim_matrix = similarity(attribute_matrix, 'gaussian')
+        self.sim_matrix = similarity(attribute_matrix, 'cosine')
         for edge in self.edges:
             u_id = edge.u_id
             v_id = edge.v_id
