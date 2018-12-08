@@ -1,5 +1,5 @@
 import numpy as np
-from sklearn.metrics.pairwise import cosine_similarity
+from sklearn.metrics.pairwise import cosine_similarity, euclidean_distances
 from copy import deepcopy
 
 def sigmoid(x):
@@ -9,6 +9,13 @@ def IoU_score(circle1, circle2):
     I = len(circle1.members & circle2.members)
     U = len(circle1.members | circle2.members)
     return 0 if U == 0 else I / U
+
+def similarity(attribute_matrix, type):
+    if type == 'cosine':
+        return cosine_similarity(attribute_matrix)
+    if type == 'gaussian':
+        dist_matrix = euclidean_distances(attribute_matrix, attribute_matrix)
+        return np.exp(-((dist_matrix ** 2) / 20))
 
 
 class Node:
@@ -44,6 +51,7 @@ class Graph:
         circle = self.circles[circle_id]
         similarity = np.min(self.sim_matrix[node_id, list(circle.members)])
         prob = similarity # sigmoid(50 * (avg_similarity - 0.5))
+        # print(prob)
         if prob > 0.5:
             temp_node.membership.add(circle_id)
             temp_circle.members.add(node_id)
@@ -127,7 +135,7 @@ class Graph:
 
     def update_graph(self):
         attribute_matrix = np.vstack([node.attributes for node in self.nodes])
-        self.sim_matrix = cosine_similarity(attribute_matrix)
+        self.sim_matrix = similarity(attribute_matrix, 'gaussian')
         for edge in self.edges:
             u_id = edge.u_id
             v_id = edge.v_id
@@ -148,6 +156,6 @@ class Graph:
         new_attributes = np.vstack([node.attributes for node in new_nodes])
         diff = np.absolute(old_attributes - new_attributes)
         avg_diff = np.average(diff)
-        if (avg_diff < 0.00001):
+        if (avg_diff < 0.0000001):
             self.is_converge = True
 

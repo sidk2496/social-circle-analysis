@@ -47,7 +47,7 @@ def main(args):
         BER_score, F1_score, F1_circ = metrics(egonet, args.inp, rev_mapping)
         BER_scores.append(BER_score)
         F1_scores.append(F1_score)
-        F1_circ_scores.append(precision_circ)
+        F1_circ_scores.append(F1_circ)
 
         np.save('f1_scores_{0}.npy'.format(args.inp), F1_scores)
         np.save('ber_scores_{0}.npy'.format(args.inp), BER_scores)
@@ -57,13 +57,14 @@ def main(args):
     plt.figure(1)
     plt.plot(thresholds, F1_scores)
     plt.xlabel('IoU Threshold')
-    plt.ylabel('F1 score')
 
-    plt.figure(2)
     plt.plot(thresholds, BER_scores)
     plt.xlabel('IoU Threshold')
-    plt.ylabel('1 - BER')
 
+    plt.plot(thresholds, F1_circ_scores)
+    plt.xlabel('IoU Threshold')
+
+    plt.legend(['F1 score', '1 - BER', 'F1 circles'])
     plt.show()
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()

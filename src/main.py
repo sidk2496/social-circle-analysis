@@ -32,8 +32,8 @@ def main(args):
         egonet.dissolve_circles(threshold)
         egonet.label_propagation(alpha)
         egonet.update_graph()
-        # if egonet.is_converge:
-        #     break
+        if egonet.is_converge:
+            break
         print('Iteration %d' % it)
 
     egonet.post_clustering()
